@@ -40,12 +40,12 @@ const MatchCard = ({ match, onBet, existingBet }: MatchCardProps) => {
                         )}
                     </div>
                     <p className="font-semibold text-sm text-zinc-900 dark:text-white leading-tight h-8 flex items-center justify-center px-1">
-                        <span className="line-clamp-2 text-center break-words w-full">{match.homeTeam.id}</span>
+                        <span className="line-clamp-2 text-center wrap-break-word w-full">{match.homeTeam.shortName}</span>
                     </p>
                 </div>
 
                 {/* Wynik lub VS */}
-                <div className="text-center min-w-[60px] shrink-0">
+                <div className="text-center min-w-15 shrink-0">
                     {match.isFinished ? (
                         <div className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-white">
                             {match.homeScore} – {match.awayScore}
@@ -65,7 +65,7 @@ const MatchCard = ({ match, onBet, existingBet }: MatchCardProps) => {
                         )}
                     </div>
                     <p className="font-semibold text-sm text-zinc-900 dark:text-white leading-tight h-8 flex items-center justify-center px-1">
-                        <span className="line-clamp-2 text-center break-words w-full">{match.awayTeam.id}</span>
+                        <span className="line-clamp-2 text-center wrap-break-word w-full">{match.awayTeam.shortName}</span>
                     </p>
                 </div>
             </div>

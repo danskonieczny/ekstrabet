@@ -3,7 +3,6 @@ import MatchList from "../components/MatchList";
 import BetModal from "../components/BetModal";
 import LeagueTabs from "../components/LeagueTabs";
 import RankingTable from "../components/RankingTable";
-import { currentUser } from "../data/users";
 import { fetchMatches } from "../data/dataSource";
 import type { Match, League } from "../types";
 
@@ -32,7 +31,15 @@ const HomePage = () => {
 
     const nextRound = upcomingRounds.length > 0 ? Math.min(...upcomingRounds) : 0;
 
-    const visibleMatches = filteredMatches.filter((m) => m.isFinished || m.round <= nextRound + 1);
+    const visibleMatches = filteredMatches
+        .filter((m) => m.isFinished || m.round <= nextRound + 1)
+        .sort((a, b) => {
+            const dateDiff = new Date(a.date).getTime() - new Date(b.date).getTime();
+            if (dateDiff !== 0) return dateDiff;
+            if (a.league === b.league) return 0;
+            if (a.league === "PGE Ekstraliga") return -1;
+            return 1;
+        });
 
     const totalUpcoming = matches.filter((m) => !m.isFinished).length;
     const betsCount = Object.keys(bets).length;

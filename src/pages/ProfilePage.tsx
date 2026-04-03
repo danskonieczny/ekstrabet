@@ -1,12 +1,18 @@
-import { currentUser, mockUsers } from "../data/users";
+import type { User } from "../types";
+import { mockUsers } from "../data/users";
 import { matches } from "../data/matches";
 
+// TODO: zastąpić prawdziwymi danymi z API → GET /api/bets?userId=...
 const mockBets: Record<number, { home: number; away: number }> = {
     1: { home: 52, away: 38 },
     3: { home: 48, away: 42 },
 };
 
-const ProfilePage = () => {
+interface ProfilePageProps {
+    currentUser: User;
+}
+
+const ProfilePage = ({ currentUser }: ProfilePageProps) => {
     const sortedUsers = [...mockUsers].sort((a, b) => b.totalPoints - a.totalPoints);
     const userRank = sortedUsers.findIndex((u) => u.id === currentUser.id) + 1;
 

@@ -1,19 +1,20 @@
-export type League = "PGE Ekstraliga" | "2 Ekstraliga";
-
 export interface Team {
-    id: string; // skrót drużyny np. 'LES', 'CZE'
+    id: number;
+    shortName: string;
     name: string;
-    logo?: string;
-    league: League;
+    league: "PGE Ekstraliga" | "2 Ekstraliga";
+    logo: string;
 }
+
+export type League = Team["league"];
 
 export interface Match {
     id: number;
-    round: number; // numer rundy
+    round: number;
     homeTeam: Team;
     awayTeam: Team;
     date: string;
-    league: League;
+    league: "PGE Ekstraliga" | "2 Ekstraliga";
     homeScore?: number;
     awayScore?: number;
     isFinished: boolean;
@@ -31,6 +32,15 @@ export interface Bet {
 export interface User {
     id: string;
     username: string;
+    email?: string;
     avatar?: string;
     totalPoints: number;
+    role: "user" | "admin";
+}
+
+// Sesja użytkownika
+export interface Session {
+    user: User;
+    token: string;
+    expiresAt: number;
 }
