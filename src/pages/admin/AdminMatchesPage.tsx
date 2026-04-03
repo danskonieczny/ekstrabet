@@ -95,6 +95,12 @@ const AdminMatchesPage = () => {
         setShowAddForm(false);
     };
 
+    const formatMatchCount = (count: number): string => {
+        if (count === 1) return "1 mecz";
+        if (count >= 2 && count <= 4) return `${count} mecze`;
+        return `${count} meczów`;
+    };
+
     const filteredMatches = matches.filter((m) => m.league === filterLeague);
 
     const sortedMatches = [...filteredMatches].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
@@ -308,7 +314,7 @@ const AdminMatchesPage = () => {
             <div className="flex items-center justify-between mb-8">
                 <div>
                     <h1 className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-white mb-1">Mecze</h1>
-                    <p className="text-sm text-zinc-500 dark:text-zinc-400">{filteredMatches.length} meczów</p>
+                    <p className="text-sm text-zinc-500 dark:text-zinc-400">{formatMatchCount(filteredMatches.length)}</p>
                 </div>
                 <button
                     onClick={() => {

@@ -17,7 +17,7 @@ export const dataSource: DataSource = {
     isStatic: true,
 };
 
-// PGE Ekstraliga teams
+// Teams
 export const teams = [
     {
         id: 1,

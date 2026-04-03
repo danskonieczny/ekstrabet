@@ -8,6 +8,7 @@ const MOCK_CREDENTIALS: Record<string, { password: string; userId: string }> = {
     daniel: { password: "Marik1234", userId: "1" },
     mateusz: { password: "Marik1234", userId: "2" },
     maciej: { password: "Marik1234", userId: "3" },
+    jakub: { password: "Marik1234", userId: "4" },
 };
 
 const SESSION_KEY = "ekstrabet_session";
