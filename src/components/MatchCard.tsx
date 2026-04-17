@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import type { Match } from "../types";
 import { calculatePoints } from "../utils/scoring";
 
@@ -8,7 +9,15 @@ interface MatchCardProps {
 }
 
 const MatchCard = ({ match, onBet, existingBet }: MatchCardProps) => {
+
+    const [now, setNow] = useState(new Date());
+    useEffect(() => {
+        const interval = setInterval(() => setNow(new Date()), 30_000);
+        return () => clearInterval(interval);
+    }, []);
     const matchDate = new Date(match.date);
+    const matchEndEstimate = new Date(matchDate.getTime() + 2 * 60 * 60 * 1000); // +2h
+
     const formattedDate = matchDate.toLocaleDateString("pl-PL", {
         weekday: "short",
         day: "numeric",
@@ -19,8 +28,8 @@ const MatchCard = ({ match, onBet, existingBet }: MatchCardProps) => {
         minute: "2-digit",
     });
 
-    const now = new Date();
     const matchStarted = new Date(match.date) <= now;
+    const isLive = matchDate <= now && now < matchEndEstimate && !match.isFinished;
     const isDarkBg = match.league === "2 Ekstraliga" || match.league === "PGE Ekstraliga";
 
     const bgColor =
@@ -40,8 +49,12 @@ const MatchCard = ({ match, onBet, existingBet }: MatchCardProps) => {
             {/* Liga + runda + data */}
             <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-2">
-                    <span className={`text-xs font-medium uppercase tracking-widest ${textMuted}`}>{match.league}</span>
-                    <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${bgInner} ${textMuted}`}>R{match.round}</span>
+                <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${bgInner} ${textMuted}`}>
+    {match.league === "PGE Ekstraliga" ? "PGEE" : "M2E"}
+</span>
+<span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${bgInner} ${textMuted}`}>
+    R{match.round}
+</span>
                 </div>
                 <span className={`text-xs ${textFaint}`}>
                     {formattedDate} · {formattedTime}
@@ -69,6 +82,14 @@ const MatchCard = ({ match, onBet, existingBet }: MatchCardProps) => {
                     {match.isFinished ? (
                         <div className={`text-2xl font-bold tracking-tight ${textPrimary} italic`}>
                             {match.homeScore} : {match.awayScore}
+                        </div>
+                    ) : isLive ? (
+                        <div className="flex flex-col items-center gap-1.5">
+                            <div className={`font-semibold text-lg ${textFaint}`}>VS</div>
+                            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-red-500/20 border border-red-500/40 text-red-400 text-xs font-bold">
+                                <span className="w-1.5 h-1.5 rounded-full bg-red-400 animate-pulse" />
+                                TRWA
+                            </span>
                         </div>
                     ) : (
                         <div className={`font-semibold text-lg ${textFaint}`}>VS</div>
