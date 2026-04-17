@@ -141,90 +141,130 @@ const MatchCard = ({ match, onBet, existingBet }: MatchCardProps) => {
                     </div>
                 )}
 
-                {match.isFinished && (
-                    <div className="space-y-2">
-                        {existingBet ? (
-                            (() => {
-                                const score = calculatePoints(
-                                    existingBet.home,
-                                    existingBet.away,
-                                    match.homeScore!,
-                                    match.awayScore!,
-                                    existingBet.isNitro,
-                                );
-                                return (
-                                    <div className={`rounded-xl py-3 px-3 space-y-2 ${bgBadge}`}>
-                                        {/* Twój typ */}
-                                        <div className={`text-center text-xs ${textMuted}`}>
-                                            Twój typ:{" "}
-                                            <span className={`font-semibold ${textPrimary}`}>
-                                                {existingBet.home} : {existingBet.away}
+            {match.isFinished && (
+                <div className="space-y-2">
+                    {existingBet ? (
+                        (() => {
+                            const score = calculatePoints(
+                                existingBet.home,
+                                existingBet.away,
+                                match.homeScore!,
+                                match.awayScore!,
+                                existingBet.isNitro,
+                            );
+
+                            return (
+                                <div className={`rounded-xl py-3 px-3 space-y-2 ${bgBadge}`}>
+                                    <div className={`text-center text-xs ${textMuted}`}>
+                                        Twój typ:{" "}
+                                        <span className={`font-semibold ${textPrimary}`}>
+                                            {existingBet.home} : {existingBet.away}
+                                        </span>
+                                    </div>
+
+                                    <div className="text-center">
+                                        <div className="flex items-center justify-center gap-1.5">
+                                            {existingBet.isNitro && (
+                                                <div className={`text-xs mb-1 line-through ${textFaint}`}>
+                                                    {score.winnerPoints + score.accuracyPoints}
+                                                </div>
+                                            )}
+
+                                            <span
+                                                className={`text-3xl font-black ${
+                                                    existingBet.isNitro
+                                                        ? "text-yellow-400"
+                                                        : score.total > 0
+                                                        ? "text-green-400"
+                                                        : textFaint
+                                                }`}
+                                            >
+                                                {score.total}
                                             </span>
-                                        </div>
 
-                                        {/* Suma punktów — główny akcent */}
-                                        <div className="text-center">
-                                            <div className="flex items-center justify-center gap-1.5">
-                                                {existingBet.isNitro && (
-                                                    <div className={`text-xs mb-1 line-through ${textFaint}`}>
-                                                        {score.winnerPoints + score.accuracyPoints}
-                                                    </div>
-                                                )}
-                                                <span
-                                                    className={`text-3xl font-black ${
-                                                        existingBet.isNitro
-                                                            ? "text-yellow-400"
-                                                            : score.total > 0
-                                                              ? "text-green-400"
-                                                              : textFaint
-                                                    }`}
-                                                >
-                                                    {score.total}
-                                                </span>
-                                                <span className={`text-sm font-medium ${textFaint}`}>pkt</span>
-                                                {existingBet.isNitro && <span className="text-yellow-400 text-sm font-bold"></span>}
-                                            </div>
-                                        </div>
-
-                                        {/* Składowe — jako pill badges */}
-                                        <div className="flex items-center justify-center gap-2">
-                                            <div
-                                                className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold ${
-                                                    score.winnerPoints > 0
-                                                        ? existingBet.isNitro
-                                                            ? "bg-yellow-400/15 text-yellow-400"
-                                                            : "bg-green-400/15 text-green-400"
-                                                        : isDarkBg
-                                                          ? "bg-white/10 text-zinc-500"
-                                                          : "bg-zinc-200 dark:bg-zinc-700 text-zinc-400 dark:text-zinc-500"
-                                                }`}
-                                            >
-                                                <span>{score.winnerPoints} pkt</span>
-                                            </div>
-                                            <span className={`text-xs ${textFaint}`}>+</span>
-                                            <div
-                                                className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold ${
-                                                    score.accuracyPoints > 0
-                                                        ? existingBet.isNitro
-                                                            ? "bg-yellow-400/15 text-yellow-400"
-                                                            : "bg-green-400/15 text-green-400"
-                                                        : isDarkBg
-                                                          ? "bg-white/10 text-zinc-500"
-                                                          : "bg-zinc-200 dark:bg-zinc-700 text-zinc-400 dark:text-zinc-500"
-                                                }`}
-                                            >
-                                                <span>{score.accuracyPoints} pkt</span>
-                                            </div>
+                                            <span className={`text-sm font-medium ${textFaint}`}>pkt</span>
                                         </div>
                                     </div>
-                                );
-                            })()
-                        ) : (
-                            <div className={`text-center text-xs py-2 px-3 rounded-xl ${bgBadge} ${textFaint}`}>Brak typowania</div>
-                        )}
-                        <div className={`text-center text-xs py-1.5 rounded-full ${bgBadge} ${textMuted}`}>Mecz zakończony</div>
+
+                                    <div className="flex items-center justify-center gap-2">
+                                        <div
+                                            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold ${
+                                                score.winnerPoints > 0
+                                                    ? existingBet.isNitro
+                                                        ? "bg-yellow-400/15 text-yellow-400"
+                                                        : "bg-green-400/15 text-green-400"
+                                                    : isDarkBg
+                                                    ? "bg-white/10 text-zinc-500"
+                                                    : "bg-zinc-200 dark:bg-zinc-700 text-zinc-400 dark:text-zinc-500"
+                                            }`}
+                                        >
+                                            <span>{score.winnerPoints} pkt</span>
+                                        </div>
+
+                                        <span className={`text-xs ${textFaint}`}>+</span>
+
+                                        <div
+                                            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold ${
+                                                score.accuracyPoints > 0
+                                                    ? existingBet.isNitro
+                                                        ? "bg-yellow-400/15 text-yellow-400"
+                                                        : "bg-green-400/15 text-green-400"
+                                                    : isDarkBg
+                                                    ? "bg-white/10 text-zinc-500"
+                                                    : "bg-zinc-200 dark:bg-zinc-700 text-zinc-400 dark:text-zinc-500"
+                                            }`}
+                                        >
+                                            <span>{score.accuracyPoints} pkt</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            );
+                        })()
+                    ) : (
+                        <div className={`rounded-xl py-3 px-3 space-y-2 ${bgBadge}`}>
+                            <div className={`text-center text-xs ${textMuted}`}>
+                                Twój typ:{" "}
+                                <span className={`font-semibold ${textFaint}`}>brak</span>
+                            </div>
+
+                            <div className="text-center">
+                                <div className="flex items-center justify-center gap-1.5">
+                                    <span className={`text-3xl font-black ${textFaint}`}>0</span>
+                                    <span className={`text-sm font-medium ${textFaint}`}>pkt</span>
+                                </div>
+                            </div>
+
+                            <div className="flex items-center justify-center gap-2">
+                                <div
+                                    className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold ${
+                                        isDarkBg
+                                            ? "bg-white/10 text-zinc-500"
+                                            : "bg-zinc-200 dark:bg-zinc-700 text-zinc-400 dark:text-zinc-500"
+                                    }`}
+                                >
+                                    <span>0 pkt</span>
+                                </div>
+
+                                <span className={`text-xs ${textFaint}`}>+</span>
+
+                                <div
+                                    className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold ${
+                                        isDarkBg
+                                            ? "bg-white/10 text-zinc-500"
+                                            : "bg-zinc-200 dark:bg-zinc-700 text-zinc-400 dark:text-zinc-500"
+                                    }`}
+                                >
+                                    <span>0 pkt</span>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    <div className={`text-center text-xs py-1.5 rounded-full ${bgBadge} ${textMuted}`}>
+                        Mecz zakończony
                     </div>
-                )}
+                </div>
+            )}
             </div>
         </div>
     );
