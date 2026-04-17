@@ -9,6 +9,7 @@ import { useTheme } from "./hooks/useTheme";
 import AdminUsersPage from "./pages/admin/AdminUsersPage";
 import AdminMatchesPage from "./pages/admin/AdminMatchesPage";
 import type { User } from "./types";
+import RulesPage from "./pages/RulesPage";
 
 function App() {
     const { theme, toggleTheme } = useTheme();
@@ -57,7 +58,8 @@ function App() {
                 <main className="max-w-5xl mx-auto px-6 pt-20 pb-12">
                     <Routes>
                         <Route path="/" element={<HomePage />} />
-                        <Route path="/profil" element={<ProfilePage currentUser={user} />} />
+                        <Route path="/profile" element={<ProfilePage currentUser={user} />} />
+                        <Route path="/rules" element={<RulesPage />} />
                         {/* <Route path="/tabela" element={<StandingsPage />} /> */}
                         <Route path="*" element={<Navigate to="/" replace />} />
                         <Route
