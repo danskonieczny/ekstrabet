@@ -3,13 +3,17 @@ import type { Match } from "../types";
 
 interface BetModalProps {
     match: Match;
+    userId: string;
+    canUseNitro: boolean; // 👈 nowe
+    existingIsNitro?: boolean; // 👈 nowe — czy obecny bet już ma NITRO
     onClose: () => void;
-    onConfirm: (matchId: number, homeScore: number, awayScore: number) => void;
+    onConfirm: (matchId: number, homeScore: number, awayScore: number, isNitro: boolean) => void;
 }
 
-const BetModal = ({ match, onClose, onConfirm }: BetModalProps) => {
+const BetModal = ({ match, userId, canUseNitro, existingIsNitro, onClose, onConfirm }: BetModalProps) => {
     const [homeScore, setHomeScore] = useState<number>(45);
     const [awayScore, setAwayScore] = useState<number>(45);
+    const [nitro, setNitro] = useState<boolean>(existingIsNitro ?? false);
 
     const matchDate = new Date(match.date);
     const formattedDate = matchDate.toLocaleDateString("pl-PL", {
@@ -19,7 +23,23 @@ const BetModal = ({ match, onClose, onConfirm }: BetModalProps) => {
     });
 
     const handleConfirm = () => {
-        onConfirm(match.id, homeScore, awayScore);
+        if (new Date(match.date) <= new Date()) {
+            alert("Nie można już oddać typowania — mecz się rozpoczął.");
+            onClose();
+            return;
+        }
+
+        const payload = {
+            matchId: match.id,
+            userId,
+            predictedHome: homeScore,
+            predictedAway: awayScore,
+            isNitro: nitro,
+        };
+
+        console.log("📦 POST /api/bets — payload:", JSON.stringify(payload, null, 2));
+
+        onConfirm(match.id, homeScore, awayScore, nitro);
         onClose();
     };
 
@@ -89,8 +109,37 @@ const BetModal = ({ match, onClose, onConfirm }: BetModalProps) => {
                     </div>
                 </div>
 
+                {/* NITRO toggle */}
+                {(canUseNitro || existingIsNitro) && (
+                    <button
+                        onClick={() => setNitro((prev) => !prev)}
+                        className={`w-full py-3 rounded-xl mb-4 text-sm font-bold flex items-center justify-center gap-2 transition-all duration-150 border-2 ${
+                            nitro
+                                ? "bg-yellow-400 border-yellow-400 text-zinc-900 shadow-lg shadow-yellow-400/30"
+                                : "bg-transparent border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400 hover:border-yellow-400 hover:text-yellow-500"
+                        }`}
+                    >
+                        <span className="text-lg">⚡</span>
+                        {nitro ? "NITRO aktywne — punkty ×2!" : "Aktywuj NITRO (×2 punkty)"}
+                    </button>
+                )}
+
+                {/* Zablokowany NITRO - już użyty w tej rundzie */}
+                {!canUseNitro && !existingIsNitro && (
+                    <div className="w-full py-3 rounded-xl mb-4 text-sm font-medium flex items-center justify-center gap-2 bg-zinc-100 dark:bg-zinc-800 text-zinc-400 dark:text-zinc-500 border-2 border-transparent">
+                        <span className="text-lg">⚡</span>
+                        NITRO użyte w tej rundzie
+                    </div>
+                )}
+
                 {/* Podgląd typowania */}
-                <div className="bg-zinc-100 dark:bg-zinc-800 rounded-xl p-4 mb-6 text-center">
+                <div
+                    className={`rounded-xl p-4 mb-6 text-center transition-colors ${
+                        nitro
+                            ? "bg-yellow-50 dark:bg-yellow-400/10 border border-yellow-300 dark:border-yellow-400/30"
+                            : "bg-zinc-100 dark:bg-zinc-800"
+                    }`}
+                >
                     <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-1">Twoje typowanie</p>
                     <p className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-white">
                         {homeScore} – {awayScore}
@@ -102,6 +151,7 @@ const BetModal = ({ match, onClose, onConfirm }: BetModalProps) => {
                               ? `Wygrywa ${match.awayTeam.name}`
                               : "Remis"}
                     </p>
+                    {nitro && <p className="text-xs font-bold text-yellow-600 dark:text-yellow-400 mt-1">⚡ Punkty zostaną podwojone</p>}
                 </div>
 
                 {/* Przyciski */}
@@ -114,9 +164,13 @@ const BetModal = ({ match, onClose, onConfirm }: BetModalProps) => {
                     </button>
                     <button
                         onClick={handleConfirm}
-                        className="flex-1 py-3 rounded-xl bg-zinc-900 dark:bg-white text-white dark:text-black text-sm font-semibold hover:bg-zinc-700 dark:hover:bg-zinc-200 active:scale-95 transition-all duration-150"
+                        className={`flex-1 py-3 rounded-xl text-sm font-semibold active:scale-95 transition-all duration-150 ${
+                            nitro
+                                ? "bg-yellow-400 text-zinc-900 hover:bg-yellow-300"
+                                : "bg-zinc-900 dark:bg-white text-white dark:text-black hover:bg-zinc-700 dark:hover:bg-zinc-200"
+                        }`}
                     >
-                        Potwierdź typowanie
+                        {nitro ? "⚡ Potwierdź z NITRO" : "Potwierdź typowanie"}
                     </button>
                 </div>
             </div>

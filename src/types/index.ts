@@ -26,21 +26,21 @@ export interface Bet {
     userId: string;
     predictedHome: number;
     predictedAway: number;
+    isNitro?: boolean;
     points?: number;
 }
 
 export interface User {
     id: string;
     username: string;
+    name: string;
     email?: string;
     avatar?: string;
-    totalPoints: number;
+    // totalPoints: number;
     role: "user" | "admin";
 }
 
 // Sesja użytkownika
 export interface Session {
     user: User;
-    token: string;
-    expiresAt: number;
 }

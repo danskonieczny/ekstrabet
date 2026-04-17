@@ -19,7 +19,8 @@ const Navbar = ({ currentUser, toggleTheme, theme, onLogout }: NavbarProps) => {
     const navLinks = [
         { to: "/", label: "Mecze" },
         // { to: "/tabela", label: "Tabela" },
-        { to: "/profil", label: "Ranking" },
+        { to: "/profile", label: "Ranking" },
+        { to: "/rules", label: "Zasady" },
     ];
 
     // Zamknij menu po kliknięciu poza nim
@@ -91,7 +92,7 @@ const Navbar = ({ currentUser, toggleTheme, theme, onLogout }: NavbarProps) => {
                                     menuOpen ? "bg-zinc-300 dark:bg-zinc-600" : "bg-zinc-200 dark:bg-zinc-700"
                                 }`}
                             >
-                                {currentUser.username.charAt(0).toUpperCase()}
+                                {currentUser.name.charAt(0).toUpperCase()}
                             </div>
                         </button>
 
@@ -100,7 +101,7 @@ const Navbar = ({ currentUser, toggleTheme, theme, onLogout }: NavbarProps) => {
                             <div className="absolute right-0 top-full mt-2 w-52 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-lg overflow-hidden z-50">
                                 {/* Info o userze */}
                                 <div className="px-4 py-3 border-b border-zinc-100 dark:border-zinc-800">
-                                    <p className="text-sm font-semibold text-zinc-900 dark:text-white">{currentUser.username}</p>
+                                    <p className="text-sm font-semibold text-zinc-900 dark:text-white">{currentUser.name}</p>
                                     <p className="text-xs text-zinc-400 dark:text-zinc-500 mt-0.5 capitalize">
                                         {currentUser.role === "admin" ? "Administrator" : "Użytkownik"}
                                     </p>
@@ -108,7 +109,7 @@ const Navbar = ({ currentUser, toggleTheme, theme, onLogout }: NavbarProps) => {
 
                                 {/* Link do profilu */}
                                 <Link
-                                    to="/profil"
+                                    to="/profile"
                                     className="flex items-center gap-3 px-4 py-2.5 text-sm text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors"
                                 >
                                     Mój profil

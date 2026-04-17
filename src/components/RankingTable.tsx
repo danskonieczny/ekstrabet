@@ -1,7 +1,34 @@
 import { mockUsers } from "../data/users";
+import { mockBets } from "../data/bets";
+import { matches } from "../data/matches";
+import { calculatePoints } from "../utils/scoring";
 
 const RankingTable = () => {
-    const sorted = [...mockUsers].sort((a, b) => b.totalPoints - a.totalPoints);
+    const usersWithPoints = mockUsers.map((user) => {
+        const userBets = mockBets.filter((b) => b.userId === user.id);
+
+        const totalPoints = userBets.reduce((sum, bet) => {
+            const match = matches.find((m) => m.id === bet.matchId);
+            if (!match || !match.isFinished || match.homeScore == null || match.awayScore == null) {
+                return sum;
+            }
+            const { total } = calculatePoints(
+                bet.predictedHome,
+                bet.predictedAway,
+                match.homeScore,
+                match.awayScore,
+                bet.isNitro, // 👈 uwzględnij NITRO
+            );
+            return sum + total;
+        }, 0);
+
+        // Policz ile razy użytkownik użył NITRO
+        const nitroCount = userBets.filter((b) => b.isNitro).length;
+
+        return { ...user, totalPoints, nitroCount };
+    });
+
+    const sorted = [...usersWithPoints].sort((a, b) => b.totalPoints - a.totalPoints);
 
     return (
         <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl overflow-hidden">
@@ -35,7 +62,7 @@ const RankingTable = () => {
                         </div>
 
                         {/* Nazwa */}
-                        <span className="flex-1 text-sm font-medium text-zinc-900 dark:text-white">{user.username}</span>
+                        <span className="flex-1 text-sm font-medium text-zinc-900 dark:text-white">{user.name}</span>
 
                         {/* Punkty */}
                         <span className="text-sm font-semibold text-zinc-500 dark:text-zinc-300">{user.totalPoints} pkt</span>

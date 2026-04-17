@@ -48,7 +48,7 @@ const AdminMatchesPage = () => {
     };
 
     const matchToForm = (match: Match): MatchForm => ({
-        homeTeamId: match.homeTeam.shortName, // ← było: match.homeTeam.id
+        homeTeamId: match.homeTeam.shortName,
         awayTeamId: match.awayTeam.shortName,
         date: match.date.split("T")[0],
         time: match.date.split("T")[1]?.slice(0, 5) ?? "18:00",
@@ -75,22 +75,27 @@ const AdminMatchesPage = () => {
 
     const saveEdit = () => {
         if (!editingId) return;
+        const payload = formToMatch(editForm, editingId);
+        console.log(`📦 PATCH /api/admin/matches/${editingId} — payload:`, JSON.stringify(payload, null, 2));
         // TODO: zastąpić → PATCH /api/admin/matches/:id
-        setMatches((prev) => prev.map((m) => (m.id === editingId ? formToMatch(editForm, editingId) : m)));
+        setMatches((prev) => prev.map((m) => (m.id === editingId ? payload : m)));
         cancelEdit();
     };
 
     const deleteMatch = (id: number) => {
-        // TODO: zastąpić → DELETE /api/admin/matches/:id
         if (!confirm("Na pewno usunąć ten mecz?")) return;
+        console.log(`📦 DELETE /api/admin/matches/${id}`);
+        // TODO: zastąpić → DELETE /api/admin/matches/:id
         setMatches((prev) => prev.filter((m) => m.id !== id));
     };
 
     const addMatch = () => {
         if (!newMatch.homeTeamId || !newMatch.awayTeamId || !newMatch.date) return;
-        // TODO: zastąpić → POST /api/admin/matches
         const id = Math.max(0, ...matches.map((m) => m.id)) + 1;
-        setMatches((prev) => [...prev, formToMatch(newMatch, id)]);
+        const payload = formToMatch(newMatch, id);
+        console.log("📦 POST /api/admin/matches — payload:", JSON.stringify(payload, null, 2));
+        // TODO: zastąpić → POST /api/admin/matches
+        setMatches((prev) => [...prev, payload]);
         setNewMatch(emptyForm);
         setShowAddForm(false);
     };
@@ -102,11 +107,20 @@ const AdminMatchesPage = () => {
     };
 
     const filteredMatches = matches.filter((m) => m.league === filterLeague);
-
     const sortedMatches = [...filteredMatches].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
+    // Grupuj mecze po rundach
+    const matchesByRound = sortedMatches.reduce<Record<number, Match[]>>((acc, match) => {
+        if (!acc[match.round]) acc[match.round] = [];
+        acc[match.round].push(match);
+        return acc;
+    }, {});
+    const rounds = Object.keys(matchesByRound)
+        .map(Number)
+        .sort((a, b) => a - b);
+
     // ── Formularz ─────────────────────────────────────────────
-    const MatchForm = ({
+    const MatchFormComponent = ({
         form,
         onChange,
         onSave,
@@ -119,7 +133,7 @@ const AdminMatchesPage = () => {
         onCancel: () => void;
         saveLabel: string;
     }) => {
-        const teams = teamsForLeague(form.league);
+        const availableTeams = teamsForLeague(form.league);
         const isValid = form.homeTeamId && form.awayTeamId && form.homeTeamId !== form.awayTeamId && form.date;
 
         return (
@@ -132,14 +146,7 @@ const AdminMatchesPage = () => {
                         </label>
                         <select
                             value={form.league}
-                            onChange={(e) =>
-                                onChange({
-                                    ...form,
-                                    league: e.target.value as League,
-                                    homeTeamId: "",
-                                    awayTeamId: "",
-                                })
-                            }
+                            onChange={(e) => onChange({ ...form, league: e.target.value as League, homeTeamId: "", awayTeamId: "" })}
                             className="w-full px-3 py-2 rounded-xl bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-zinc-900 dark:focus:ring-white"
                         >
                             <option value="PGE Ekstraliga">PGE Ekstraliga</option>
@@ -198,11 +205,10 @@ const AdminMatchesPage = () => {
                             className="w-full px-3 py-2 rounded-xl bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-zinc-900 dark:focus:ring-white"
                         >
                             <option value="">Wybierz...</option>
-                            {teams
+                            {availableTeams
                                 .filter((t) => t.shortName !== form.awayTeamId)
                                 .map((t) => (
                                     <option key={t.shortName} value={t.shortName}>
-                                        {" "}
                                         {t.name}
                                     </option>
                                 ))}
@@ -220,7 +226,7 @@ const AdminMatchesPage = () => {
                             className="w-full px-3 py-2 rounded-xl bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-zinc-900 dark:focus:ring-white"
                         >
                             <option value="">Wybierz...</option>
-                            {teams
+                            {availableTeams
                                 .filter((t) => t.shortName !== form.homeTeamId)
                                 .map((t) => (
                                     <option key={t.shortName} value={t.shortName}>
@@ -249,7 +255,7 @@ const AdminMatchesPage = () => {
                         </label>
                     </div>
 
-                    {/* Wynik – tylko gdy zakończony */}
+                    {/* Wynik */}
                     {form.isFinished && (
                         <>
                             <div>
@@ -262,11 +268,7 @@ const AdminMatchesPage = () => {
                                     max={90}
                                     value={form.homeScore}
                                     onChange={(e) =>
-                                        onChange({
-                                            ...form,
-                                            homeScore: e.target.value,
-                                            awayScore: String(90 - Number(e.target.value)),
-                                        })
+                                        onChange({ ...form, homeScore: e.target.value, awayScore: String(90 - Number(e.target.value)) })
                                     }
                                     className="w-full px-3 py-2 rounded-xl bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-zinc-900 dark:focus:ring-white"
                                 />
@@ -287,7 +289,6 @@ const AdminMatchesPage = () => {
                     )}
                 </div>
 
-                {/* Przyciski */}
                 <div className="flex gap-3 mt-5 pt-5 border-t border-zinc-100 dark:border-zinc-800">
                     <button
                         onClick={onSave}
@@ -324,13 +325,14 @@ const AdminMatchesPage = () => {
                     className="flex items-center gap-2 px-4 py-2 rounded-xl bg-zinc-900 dark:bg-white text-white dark:text-black text-sm font-semibold hover:bg-zinc-700 dark:hover:bg-zinc-200 active:scale-95 transition-all"
                 >
                     <Plus size={15} />
-                    Dodaj mecz
+                    <span className="hidden sm:inline">Dodaj mecz</span>
+                    <span className="sm:hidden">Dodaj</span>
                 </button>
             </div>
 
             {/* Formularz dodawania */}
             {showAddForm && (
-                <MatchForm
+                <MatchFormComponent
                     form={newMatch}
                     onChange={setNewMatch}
                     onSave={addMatch}
@@ -345,114 +347,154 @@ const AdminMatchesPage = () => {
                     <button
                         key={l}
                         onClick={() => setFilterLeague(l)}
-                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                        className={`px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium transition-all ${
                             filterLeague === l
                                 ? "bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white shadow-sm"
                                 : "text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white"
                         }`}
                     >
-                        {l}
+                        {/* Skrót na mobile */}
+                        <span className="sm:hidden">{l === "PGE Ekstraliga" ? "PGE" : "2 Ekstra"}</span>
+                        <span className="hidden sm:inline">{l}</span>
                     </button>
                 ))}
             </div>
 
-            {/* Lista meczów */}
-            <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl overflow-hidden">
-                {sortedMatches.length === 0 && <p className="text-center text-zinc-400 dark:text-zinc-500 text-sm py-10">Brak meczów</p>}
-                {sortedMatches.map((match, index) => {
-                    const isEditing = editingId === match.id;
-                    const isLast = index === sortedMatches.length - 1;
-                    const matchDate = new Date(match.date);
+            {/* Lista meczów pogrupowana po rundach */}
+            {rounds.length === 0 && <p className="text-center text-zinc-400 dark:text-zinc-500 text-sm py-10">Brak meczów</p>}
+
+            <div className="space-y-6">
+                {rounds.map((round) => {
+                    const roundMatches = matchesByRound[round];
+                    const allFinished = roundMatches.every((m) => m.isFinished);
+                    const someFinished = roundMatches.some((m) => m.isFinished);
 
                     return (
-                        <div key={match.id}>
-                            {/* Wiersz meczu */}
-                            {!isEditing && (
-                                <div
-                                    className={`flex items-center gap-4 px-5 py-4 hover:bg-zinc-50 dark:hover:bg-zinc-800/40 transition-colors ${
-                                        !isLast ? "border-b border-zinc-100 dark:border-zinc-800" : ""
-                                    }`}
-                                >
-                                    {/* Runda – pierwsza kolumna */}
-                                    <div className="w-14 shrink-0 text-center">
-                                        <span className="text-xs font-semibold text-zinc-900 dark:text-white bg-zinc-100 dark:bg-zinc-800 px-2 py-1 rounded-lg">
-                                            R{match.round}
+                        <div key={round}>
+                            {/* Nagłówek rundy */}
+                            <div className="flex items-center gap-3 mb-3">
+                                <div className="flex items-center gap-2">
+                                    <span className="text-xs font-bold text-zinc-900 dark:text-white bg-zinc-100 dark:bg-zinc-800 px-3 py-1.5 rounded-lg">
+                                        Runda {round}
+                                    </span>
+                                    {allFinished && (
+                                        <span className="text-xs text-zinc-400 dark:text-zinc-500 bg-zinc-100 dark:bg-zinc-800 px-2.5 py-1.5 rounded-lg flex items-center gap-1">
+                                            <Trophy size={10} className="text-yellow-500" />
+                                            Zakończona
                                         </span>
-                                    </div>
-
-                                    {/* Data */}
-                                    <div className="w-20 shrink-0 text-center">
-                                        <p className="text-xs font-semibold text-zinc-900 dark:text-white">
-                                            {matchDate.toLocaleDateString("pl-PL", { day: "numeric", month: "short" })}
-                                        </p>
-                                        <p className="text-xs text-zinc-400 dark:text-zinc-500 mt-0.5">
-                                            {matchDate.toLocaleTimeString("pl-PL", { hour: "2-digit", minute: "2-digit" })}
-                                        </p>
-                                    </div>
-
-                                    {/* Mecz */}
-                                    <div className="flex-1 min-w-0">
-                                        <p className="text-sm font-medium text-zinc-900 dark:text-white truncate">
-                                            {match.homeTeam.name} vs {match.awayTeam.name}
-                                        </p>
-                                        <p className="text-xs text-zinc-400 dark:text-zinc-500 mt-0.5">{match.league}</p>
-                                    </div>
-
-                                    {/* Wynik lub status */}
-                                    <div className="w-24 text-center shrink-0">
-                                        {match.isFinished ? (
-                                            <div className="flex items-center justify-center gap-1.5">
-                                                <Trophy size={11} className="text-yellow-500" />
-                                                <span className="text-sm font-bold text-zinc-900 dark:text-white">
-                                                    {match.homeScore}:{match.awayScore}
-                                                </span>
-                                            </div>
-                                        ) : (
-                                            <span className="text-xs text-zinc-400 dark:text-zinc-500 bg-zinc-100 dark:bg-zinc-800 px-2.5 py-1 rounded-full">
-                                                Planowany
-                                            </span>
-                                        )}
-                                    </div>
-
-                                    {/* Akcje */}
-                                    <div className="flex items-center gap-1.5 shrink-0">
-                                        <button
-                                            onClick={() => startEdit(match)}
-                                            className="w-7 h-7 rounded-lg bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center text-zinc-500 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors"
-                                            aria-label="Edytuj"
-                                        >
-                                            <Pencil size={13} />
-                                        </button>
-                                        <button
-                                            onClick={() => deleteMatch(match.id)}
-                                            className="w-7 h-7 rounded-lg bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center text-zinc-500 dark:text-zinc-400 hover:bg-red-100 dark:hover:bg-red-950/30 hover:text-red-500 transition-colors"
-                                            aria-label="Usuń"
-                                        >
-                                            <Trash2 size={13} />
-                                        </button>
-                                    </div>
+                                    )}
+                                    {!allFinished && someFinished && (
+                                        <span className="text-xs text-zinc-400 dark:text-zinc-500 bg-zinc-100 dark:bg-zinc-800 px-2.5 py-1.5 rounded-lg">
+                                            W trakcie
+                                        </span>
+                                    )}
                                 </div>
-                            )}
+                                <div className="flex-1 h-px bg-zinc-100 dark:bg-zinc-800" />
+                                <span className="text-xs text-zinc-400 dark:text-zinc-500">{roundMatches.length} meczów</span>
+                            </div>
 
-                            {/* Formularz edycji inline */}
-                            {isEditing && (
-                                <div
-                                    className={`p-5 bg-zinc-50 dark:bg-zinc-800/30 ${
-                                        !isLast ? "border-b border-zinc-100 dark:border-zinc-800" : ""
-                                    }`}
-                                >
-                                    <p className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-widest mb-4">
-                                        Edytujesz: {match.homeTeam.name} vs {match.awayTeam.name}
-                                    </p>
-                                    <MatchForm
-                                        form={editForm}
-                                        onChange={setEditForm}
-                                        onSave={saveEdit}
-                                        onCancel={cancelEdit}
-                                        saveLabel="Zapisz zmiany"
-                                    />
-                                </div>
-                            )}
+                            {/* Mecze rundy */}
+                            <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl overflow-hidden">
+                                {roundMatches.map((match, index) => {
+                                    const isEditing = editingId === match.id;
+                                    const isLast = index === roundMatches.length - 1;
+                                    const matchDate = new Date(match.date);
+
+                                    return (
+                                        <div key={match.id}>
+                                            {!isEditing && (
+                                                <div
+                                                    className={`flex items-center gap-2 sm:gap-4 px-3 sm:px-5 py-3 sm:py-4 hover:bg-zinc-50 dark:hover:bg-zinc-800/40 transition-colors ${
+                                                        !isLast ? "border-b border-zinc-100 dark:border-zinc-800" : ""
+                                                    }`}
+                                                >
+                                                    {/* Data */}
+                                                    <div className="w-14 sm:w-20 shrink-0 text-center">
+                                                        <p className="text-xs font-semibold text-zinc-900 dark:text-white">
+                                                            {matchDate.toLocaleDateString("pl-PL", { day: "numeric", month: "short" })}
+                                                        </p>
+                                                        <p className="text-xs text-zinc-400 dark:text-zinc-500 mt-0.5">
+                                                            {matchDate.toLocaleTimeString("pl-PL", { hour: "2-digit", minute: "2-digit" })}
+                                                        </p>
+                                                    </div>
+
+                                                    {/* Mecz */}
+                                                    <div className="flex-1 min-w-0">
+                                                        {/* Desktop: jedna linia */}
+                                                        <p className="hidden sm:block text-sm font-medium text-zinc-900 dark:text-white truncate">
+                                                            {match.homeTeam.name} vs {match.awayTeam.name}
+                                                        </p>
+                                                        {/* Mobile: dwie linie */}
+                                                        <div className="sm:hidden">
+                                                            <p className="text-xs font-semibold text-zinc-900 dark:text-white truncate">
+                                                                {match.homeTeam.shortName}
+                                                            </p>
+                                                            <p className="text-xs text-zinc-400 dark:text-zinc-500">
+                                                                vs {match.awayTeam.shortName}
+                                                            </p>
+                                                        </div>
+                                                    </div>
+
+                                                    {/* Wynik lub status */}
+                                                    <div className="w-16 sm:w-24 text-center shrink-0">
+                                                        {match.isFinished ? (
+                                                            <div className="flex items-center justify-center gap-1">
+                                                                <Trophy size={10} className="text-yellow-500 hidden sm:block" />
+                                                                <span className="text-sm font-bold text-zinc-900 dark:text-white">
+                                                                    {match.homeScore}:{match.awayScore}
+                                                                </span>
+                                                            </div>
+                                                        ) : (
+                                                            <span className="text-xs text-zinc-400 dark:text-zinc-500 bg-zinc-100 dark:bg-zinc-800 px-2 py-1 rounded-full">
+                                                                <span className="hidden sm:inline">Planowany</span>
+                                                                <span className="sm:hidden">–</span>
+                                                            </span>
+                                                        )}
+                                                    </div>
+
+                                                    {/* Akcje */}
+                                                    <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
+                                                        <button
+                                                            onClick={() => startEdit(match)}
+                                                            className="w-7 h-7 rounded-lg bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center text-zinc-500 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors"
+                                                            aria-label="Edytuj"
+                                                        >
+                                                            <Pencil size={13} />
+                                                        </button>
+                                                        <button
+                                                            onClick={() => deleteMatch(match.id)}
+                                                            className="w-7 h-7 rounded-lg bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center text-zinc-500 dark:text-zinc-400 hover:bg-red-100 dark:hover:bg-red-950/30 hover:text-red-500 transition-colors"
+                                                            aria-label="Usuń"
+                                                        >
+                                                            <Trash2 size={13} />
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            {/* Formularz edycji inline */}
+                                            {isEditing && (
+                                                <div
+                                                    className={`p-3 sm:p-5 bg-zinc-50 dark:bg-zinc-800/30 ${
+                                                        !isLast ? "border-b border-zinc-100 dark:border-zinc-800" : ""
+                                                    }`}
+                                                >
+                                                    <p className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-widest mb-4">
+                                                        Edytujesz: {match.homeTeam.shortName} vs {match.awayTeam.shortName}
+                                                    </p>
+                                                    <MatchFormComponent
+                                                        form={editForm}
+                                                        onChange={setEditForm}
+                                                        onSave={saveEdit}
+                                                        onCancel={cancelEdit}
+                                                        saveLabel="Zapisz zmiany"
+                                                    />
+                                                </div>
+                                            )}
+                                        </div>
+                                    );
+                                })}
+                            </div>
                         </div>
                     );
                 })}

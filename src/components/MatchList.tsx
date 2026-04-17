@@ -30,7 +30,7 @@ const MatchList = ({ matches, onBet, bets }: MatchListProps) => {
                     <h2 className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-widest mb-4">Wyniki</h2>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         {finished.map((match) => (
-                            <MatchCard key={match.id} match={match} onBet={onBet} />
+                            <MatchCard key={match.id} match={match} onBet={onBet} existingBet={bets[match.id]} />
                         ))}
                     </div>
                 </section>

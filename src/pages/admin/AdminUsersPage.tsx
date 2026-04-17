@@ -9,11 +9,11 @@ const AdminUsersPage = () => {
     const [editingId, setEditingId] = useState<string | null>(null);
     const [editForm, setEditForm] = useState<Partial<User>>({});
     const [showAddForm, setShowAddForm] = useState(false);
-    const [newUser, setNewUser] = useState({ username: "", role: "user" as User["role"] });
+    const [newUser, setNewUser] = useState({ username: "", name: "", role: "user" as User["role"] });
 
     const startEdit = (user: User) => {
         setEditingId(user.id);
-        setEditForm({ username: user.username, role: user.role });
+        setEditForm({ username: user.username, name: user.name, role: user.role });
     };
 
     const cancelEdit = () => {
@@ -22,28 +22,54 @@ const AdminUsersPage = () => {
     };
 
     const saveEdit = (id: string) => {
+        const user = users.find((u) => u.id === id);
+        if (!user) return;
+
+        // Payload wysyłany do API – tylko zmienione pola
+        const payload = {
+            username: editForm.username?.trim() ?? user.username,
+            name: editForm.name?.trim() ?? user.name,
+            role: editForm.role ?? user.role,
+        };
+
+        console.log(`📦 PATCH /api/admin/users/${id} — payload:`, JSON.stringify(payload, null, 2));
+
         // TODO: zastąpić → PATCH /api/admin/users/:id
-        setUsers((prev) => prev.map((u) => (u.id === id ? { ...u, ...editForm } : u)));
+        setUsers((prev) => prev.map((u) => (u.id === id ? { ...u, ...payload } : u)));
         cancelEdit();
     };
 
     const deleteUser = (id: string) => {
-        // TODO: zastąpić → DELETE /api/admin/users/:id
         if (!confirm("Na pewno usunąć tego użytkownika?")) return;
+
+        console.log(`📦 DELETE /api/admin/users/${id}`);
+
+        // TODO: zastąpić → DELETE /api/admin/users/:id
         setUsers((prev) => prev.filter((u) => u.id !== id));
     };
 
     const addUser = () => {
         if (!newUser.username.trim()) return;
+
+        // Payload wysyłany do API – bez id i totalPoints (nadaje baza)
+        const payload = {
+            username: newUser.username.trim(),
+            name: newUser.name.trim(),
+            role: newUser.role,
+        };
+
+        console.log("📦 POST /api/admin/users — payload:", JSON.stringify(payload, null, 2));
+
         // TODO: zastąpić → POST /api/admin/users
+        // Lokalnie dodajemy z tymczasowym id (docelowo przyjdzie z odpowiedzi API)
         const created: User = {
             id: crypto.randomUUID(),
-            username: newUser.username.trim(),
-            role: newUser.role,
-            totalPoints: 0,
+            // totalPoints: 0,
+            ...payload,
         };
+
         setUsers((prev) => [...prev, created]);
-        setNewUser({ username: "", role: "user" });
+        setNewUser({ username: "", name: "", role: "user" });
         setShowAddForm(false);
     };
 
@@ -146,6 +172,24 @@ const AdminUsersPage = () => {
                                 </div>
                             )}
 
+                            {/* Name */}
+                            {isEditing ? (
+                                <input
+                                    type="text"
+                                    value={editForm.name ?? ""}
+                                    onChange={(e) => setEditForm((prev) => ({ ...prev, name: e.target.value }))}
+                                    className="px-3 py-1.5 rounded-lg bg-zinc-100 dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-600 text-zinc-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-zinc-900 dark:focus:ring-white"
+                                    autoFocus
+                                />
+                            ) : (
+                                <div className="flex items-center gap-2.5">
+                                    <div className="w-7 h-7 rounded-full bg-zinc-200 dark:bg-zinc-700 flex items-center justify-center text-xs font-semibold text-zinc-900 dark:text-white shrink-0">
+                                        {user.name.charAt(0).toUpperCase()}
+                                    </div>
+                                    <span className="text-sm font-medium text-zinc-900 dark:text-white">{user.name}</span>
+                                </div>
+                            )}
+
                             {/* Rola */}
                             {isEditing ? (
                                 <select
@@ -169,7 +213,7 @@ const AdminUsersPage = () => {
                             )}
 
                             {/* Punkty */}
-                            <span className="text-sm font-semibold text-zinc-900 dark:text-white">{user.totalPoints}</span>
+                            {/* <span className="text-sm font-semibold text-zinc-900 dark:text-white">{user.totalPoints}</span> */}
 
                             {/* Akcje */}
                             <div className="flex items-center gap-1.5 justify-end">

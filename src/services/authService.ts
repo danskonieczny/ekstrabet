@@ -1,5 +1,6 @@
 import type { Session } from "../types";
 import { mockUsers } from "../data/users";
+import { mockBets } from "../data/bets";
 
 // ============================================================
 // MOCK – dane na sztywno, zastąpić API
@@ -12,18 +13,11 @@ const MOCK_CREDENTIALS: Record<string, { password: string; userId: string }> = {
 };
 
 const SESSION_KEY = "ekstrabet_session";
-const SESSION_DURATION_MS = 7 * 24 * 60 * 60 * 1000; // 7 dni
-
-// Generuje prosty token (mock) – docelowo JWT z serwera
-const generateMockToken = (userId: string): string => {
-    return `mock_token_${userId}_${Date.now()}`;
-};
 
 export const authService = {
     // ── LOGIN ──────────────────────────────────────────────
     // TODO: zastąpić → POST /api/auth/login
     async login(username: string, password: string): Promise<{ session: Session | null; error: string | null }> {
-        // Symulacja opóźnienia sieciowego
         await new Promise((r) => setTimeout(r, 600));
 
         const credentials = MOCK_CREDENTIALS[username.toLowerCase()];
@@ -36,50 +30,35 @@ export const authService = {
             return { session: null, error: "Użytkownik nie istnieje" };
         }
 
-        const session: Session = {
-            user,
-            token: generateMockToken(user.id),
-            expiresAt: Date.now() + SESSION_DURATION_MS,
-        };
-
-        // Zapisz sesję lokalnie
+        const session: Session = { user };
         authService.saveSession(session);
+
+        // 👇 Bety zalogowanego użytkownika – zastąpić → GET /api/bets?userId=...
+        const userBets = mockBets.filter((b) => b.userId === user.id);
+        console.log(`🎯 Bety użytkownika "${user.username}" (${userBets.length}):`, JSON.stringify(userBets, null, 2));
 
         return { session, error: null };
     },
 
     // ── LOGOUT ─────────────────────────────────────────────
-    // TODO: zastąpić → POST /api/auth/logout (unieważnienie tokenu)
+    // TODO: zastąpić → POST /api/auth/logout
     async logout(): Promise<void> {
         await new Promise((r) => setTimeout(r, 200));
         authService.clearSession();
     },
 
     // ── ODŚWIEŻ SESJĘ (przy wejściu na stronę) ─────────────
-    // TODO: zastąpić → GET /api/auth/me (weryfikacja tokenu przez serwer)
+    // TODO: zastąpić → GET /api/auth/me
     async restoreSession(): Promise<Session | null> {
-        const session = authService.getSession();
-        if (!session) return null;
-
-        // Sprawdź czy sesja nie wygasła
-        if (Date.now() > session.expiresAt) {
-            authService.clearSession();
-            return null;
-        }
-
-        // Symulacja weryfikacji tokenu przez serwer
         await new Promise((r) => setTimeout(r, 300));
-
-        // TODO: tutaj fetch('/api/auth/me', { headers: { Authorization: `Bearer ${session.token}` } })
-        return session;
+        return authService.getSession();
     },
 
-    // ── HELPERS – zapis/odczyt sesji ───────────────────────
+    // ── HELPERS ────────────────────────────────────────────
     saveSession(session: Session): void {
         try {
             localStorage.setItem(SESSION_KEY, JSON.stringify(session));
         } catch {
-            // localStorage może być zablokowany (tryb prywatny)
             sessionStorage.setItem(SESSION_KEY, JSON.stringify(session));
         }
     },
@@ -96,10 +75,5 @@ export const authService = {
     clearSession(): void {
         localStorage.removeItem(SESSION_KEY);
         sessionStorage.removeItem(SESSION_KEY);
-    },
-
-    // ── TOKEN do przyszłych requestów API ──────────────────
-    getToken(): string | null {
-        return authService.getSession()?.token ?? null;
     },
 };

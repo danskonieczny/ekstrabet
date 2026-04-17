@@ -4,13 +4,27 @@ import BetModal from "../components/BetModal";
 import LeagueTabs from "../components/LeagueTabs";
 import RankingTable from "../components/RankingTable";
 import { fetchMatches } from "../data/dataSource";
+import { mockBets } from "../data/bets";
+import { authService } from "../services/authService";
 import type { Match, League } from "../types";
+import { canUseNitro } from "../utils/nitro";
 
 const HomePage = () => {
     const [matches, setMatches] = useState<Match[]>([]);
     const [selectedMatch, setSelectedMatch] = useState<Match | null>(null);
-    const [bets, setBets] = useState<Record<number, { home: number; away: number }>>({});
     const [activeLeague, setActiveLeague] = useState<League | "Wszystkie">("Wszystkie");
+
+    // Pobierz zalogowanego użytkownika z sesji
+    const session = authService.getSession();
+    const userId = session?.user.id ?? "";
+
+    // Wczytaj bety tylko dla zalogowanego użytkownika
+    const userBets = mockBets.filter((b) => b.userId === userId);
+
+    // Stan betów: Record<matchId, { home, away }>
+    const [bets, setBets] = useState<Record<number, { home: number; away: number; isNitro: boolean }>>(() =>
+        Object.fromEntries(userBets.map((b) => [b.matchId, { home: b.predictedHome, away: b.predictedAway, isNitro: b.isNitro ?? false }])),
+    );
 
     useEffect(() => {
         fetchMatches().then(setMatches);
@@ -21,14 +35,13 @@ const HomePage = () => {
         if (match) setSelectedMatch(match);
     };
 
-    const handleConfirm = (matchId: number, homeScore: number, awayScore: number) => {
-        setBets((prev) => ({ ...prev, [matchId]: { home: homeScore, away: awayScore } }));
+    const handleConfirm = (matchId: number, homeScore: number, awayScore: number, isNitro: boolean) => {
+        setBets((prev) => ({ ...prev, [matchId]: { home: homeScore, away: awayScore, isNitro } }));
     };
 
     const filteredMatches = activeLeague === "Wszystkie" ? matches : matches.filter((m) => m.league === activeLeague);
 
     const upcomingRounds = filteredMatches.filter((m) => !m.isFinished).map((m) => m.round);
-
     const nextRound = upcomingRounds.length > 0 ? Math.min(...upcomingRounds) : 0;
 
     const visibleMatches = filteredMatches
@@ -43,6 +56,18 @@ const HomePage = () => {
 
     const totalUpcoming = matches.filter((m) => !m.isFinished).length;
     const betsCount = Object.keys(bets).length;
+
+    const allBetsForNitroCheck = [
+        ...mockBets.filter((b) => b.userId !== userId),
+        ...Object.entries(bets).map(([matchId, bet], i) => ({
+            id: 9000 + i,
+            matchId: Number(matchId),
+            userId,
+            predictedHome: bet.home,
+            predictedAway: bet.away,
+            isNitro: bet.isNitro,
+        })),
+    ];
 
     return (
         <>
@@ -87,7 +112,16 @@ const HomePage = () => {
             </div>
 
             {/* Modal obstawiania */}
-            {selectedMatch && <BetModal match={selectedMatch} onClose={() => setSelectedMatch(null)} onConfirm={handleConfirm} />}
+            {selectedMatch && (
+                <BetModal
+                    match={selectedMatch}
+                    userId={userId}
+                    canUseNitro={canUseNitro(userId, selectedMatch, allBetsForNitroCheck, matches)}
+                    existingIsNitro={bets[selectedMatch.id]?.isNitro ?? false}
+                    onClose={() => setSelectedMatch(null)}
+                    onConfirm={handleConfirm}
+                />
+            )}
         </>
     );
 };

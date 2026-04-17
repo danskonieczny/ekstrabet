@@ -1,22 +1,32 @@
 import type { User } from "../types";
 import { mockUsers } from "../data/users";
+import { mockBets } from "../data/bets";
 import { matches } from "../data/matches";
-
-// TODO: zastąpić prawdziwymi danymi z API → GET /api/bets?userId=...
-const mockBets: Record<number, { home: number; away: number }> = {
-    1: { home: 52, away: 38 },
-    3: { home: 48, away: 42 },
-};
+import { calculatePoints } from "../utils/scoring";
 
 interface ProfilePageProps {
     currentUser: User;
 }
 
 const ProfilePage = ({ currentUser }: ProfilePageProps) => {
-    const sortedUsers = [...mockUsers].sort((a, b) => b.totalPoints - a.totalPoints);
-    const userRank = sortedUsers.findIndex((u) => u.id === currentUser.id) + 1;
+    const userBets = mockBets.filter((b) => b.userId === currentUser.id);
 
-    const bettedMatches = matches.filter((m) => mockBets[m.id]);
+    // Przelicz punkty dla każdego użytkownika z uwzględnieniem NITRO
+    const usersWithPoints = mockUsers.map((user) => {
+        const bets = mockBets.filter((b) => b.userId === user.id);
+        const totalPoints = bets.reduce((sum, bet) => {
+            const match = matches.find((m) => m.id === bet.matchId);
+            if (!match || !match.isFinished || match.homeScore == null || match.awayScore == null) return sum;
+            return sum + calculatePoints(bet.predictedHome, bet.predictedAway, match.homeScore, match.awayScore, bet.isNitro).total;
+        }, 0);
+        return { ...user, totalPoints };
+    });
+
+    const sortedUsers = [...usersWithPoints].sort((a, b) => b.totalPoints - a.totalPoints);
+    const userRank = sortedUsers.findIndex((u) => u.id === currentUser.id) + 1;
+    const currentUserPoints = usersWithPoints.find((u) => u.id === currentUser.id)?.totalPoints ?? 0;
+
+    const bettedMatches = matches.filter((m) => userBets.some((b) => b.matchId === m.id));
 
     return (
         <>
@@ -34,8 +44,8 @@ const ProfilePage = ({ currentUser }: ProfilePageProps) => {
             {/* Statystyki */}
             <div className="grid grid-cols-3 gap-4 mb-10">
                 {[
-                    { label: "Punkty", value: currentUser.totalPoints },
-                    { label: "Typowań", value: Object.keys(mockBets).length },
+                    { label: "Punkty", value: currentUserPoints },
+                    { label: "Typowań", value: userBets.length },
                     { label: "Ranking", value: `#${userRank}` },
                 ].map((stat) => (
                     <div
@@ -56,8 +66,14 @@ const ProfilePage = ({ currentUser }: ProfilePageProps) => {
                         <p className="text-zinc-400 dark:text-zinc-500 text-sm text-center py-8">Brak typowań</p>
                     )}
                     {bettedMatches.map((match, index) => {
-                        const bet = mockBets[match.id];
+                        const bet = userBets.find((b) => b.matchId === match.id)!;
                         const isLast = index === bettedMatches.length - 1;
+
+                        const score =
+                            match.isFinished && match.homeScore != null && match.awayScore != null
+                                ? calculatePoints(bet.predictedHome, bet.predictedAway, match.homeScore, match.awayScore, bet.isNitro)
+                                : null;
+
                         return (
                             <div
                                 key={match.id}
@@ -66,19 +82,27 @@ const ProfilePage = ({ currentUser }: ProfilePageProps) => {
                                 }`}
                             >
                                 <div>
-                                    <p className="text-sm font-medium text-zinc-900 dark:text-white">
+                                    <p className="text-sm font-medium text-zinc-900 dark:text-white flex items-center gap-1.5">
+                                        {bet.isNitro && <span className="text-yellow-500">⚡</span>}
                                         {match.homeTeam.name} vs {match.awayTeam.name}
                                     </p>
                                     <p className="text-xs text-zinc-500 dark:text-zinc-500 mt-0.5">{match.league}</p>
                                 </div>
                                 <div className="text-right">
                                     <p className="text-sm font-bold text-zinc-900 dark:text-white">
-                                        {bet.home} – {bet.away}
+                                        {bet.predictedHome} – {bet.predictedAway}
                                     </p>
-                                    {match.isFinished ? (
-                                        <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
-                                            Wynik: {match.homeScore} – {match.awayScore}
-                                        </p>
+                                    {match.isFinished && score ? (
+                                        <>
+                                            <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
+                                                Wynik: {match.homeScore} – {match.awayScore}
+                                            </p>
+                                            <p className="text-xs font-semibold mt-0.5 flex items-center justify-end gap-1">
+                                                {bet.isNitro && <span className="text-yellow-500">⚡</span>}
+                                                <span className="text-green-600 dark:text-green-400">+{score.total} pkt</span>
+                                                {bet.isNitro && <span className="text-yellow-500 text-xs">(×2)</span>}
+                                            </p>
+                                        </>
                                     ) : (
                                         <p className="text-xs text-zinc-400 dark:text-zinc-500 mt-0.5">Oczekuje</p>
                                     )}
