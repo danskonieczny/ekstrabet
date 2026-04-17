@@ -3,8 +3,8 @@ import MatchCard from "./MatchCard";
 
 interface MatchListProps {
     matches: Match[];
-    onBet: (matchId: number) => void;
-    bets: Record<number, { home: number; away: number }>;
+    onBet: (matchId: string) => void;
+    bets: Record<string, { home: number; away: number; isNitro: boolean }>;
 }
 
 const MatchList = ({ matches, onBet, bets }: MatchListProps) => {

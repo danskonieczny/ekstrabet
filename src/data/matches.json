@@ -1,0 +1,168 @@
+[
+  {
+    "id": "PGEE-R01-M01",
+    "round": 1,
+    "homeTeamId": "LES",
+    "awayTeamId": "CZE",
+    "date": "2026-04-10T18:00:00",
+    "league": "PGE Ekstraliga",
+    "homeScore": 59,
+    "awayScore": 31,
+    "isFinished": true
+  },
+  {
+    "id": "PGEE-R01-M02",
+    "round": 1,
+    "homeTeamId": "WRO",
+    "awayTeamId": "ZIE",
+    "date": "2026-04-10T20:30:00",
+    "league": "PGE Ekstraliga",
+    "homeScore": 64,
+    "awayScore": 26,
+    "isFinished": true
+  },
+  {
+    "id": "PGEE-R01-M03",
+    "round": 1,
+    "homeTeamId": "GRU",
+    "awayTeamId": "GOR",
+    "date": "2026-04-12T17:00:00",
+    "league": "PGE Ekstraliga",
+    "homeScore": 45,
+    "awayScore": 45,
+    "isFinished": true
+  },
+  {
+    "id": "PGEE-R01-M04",
+    "round": 1,
+    "homeTeamId": "LUB",
+    "awayTeamId": "TOR",
+    "date": "2026-04-12T19:30:00",
+    "league": "PGE Ekstraliga",
+    "homeScore": 56,
+    "awayScore": 34,
+    "isFinished": true
+  },
+  {
+    "id": "PGEE-R02-M01",
+    "round": 2,
+    "homeTeamId": "CZE",
+    "awayTeamId": "LUB",
+    "date": "2026-04-17T18:00:00",
+    "league": "PGE Ekstraliga",
+    "isFinished": false
+  },
+  {
+    "id": "PGEE-R02-M02",
+    "round": 2,
+    "homeTeamId": "GOR",
+    "awayTeamId": "WRO",
+    "date": "2026-04-17T20:30:00",
+    "league": "PGE Ekstraliga",
+    "isFinished": false
+  },
+  {
+    "id": "PGEE-R02-M03",
+    "round": 2,
+    "homeTeamId": "TOR",
+    "awayTeamId": "LES",
+    "date": "2026-04-19T17:00:00",
+    "league": "PGE Ekstraliga",
+    "isFinished": false
+  },
+  {
+    "id": "PGEE-R02-M04",
+    "round": 2,
+    "homeTeamId": "ZIE",
+    "awayTeamId": "GRU",
+    "date": "2026-04-19T19:30:00",
+    "league": "PGE Ekstraliga",
+    "isFinished": false
+  },
+  {
+    "id": "M2E-R01-M01",
+    "round": 1,
+    "homeTeamId": "OST",
+    "awayTeamId": "POZ",
+    "date": "2026-04-04T14:00:00",
+    "league": "2 Ekstraliga",
+    "homeScore": 56,
+    "awayScore": 34,
+    "isFinished": true
+  },
+  {
+    "id": "M2E-R01-M02",
+    "round": 1,
+    "homeTeamId": "RZE",
+    "awayTeamId": "LOD",
+    "date": "2026-04-04T16:30:00",
+    "league": "2 Ekstraliga",
+    "homeScore": 45,
+    "awayScore": 45,
+    "isFinished": true
+  },
+  {
+    "id": "M2E-R01-M03",
+    "round": 1,
+    "homeTeamId": "PIL",
+    "awayTeamId": "RYB",
+    "date": "2026-04-05T16:10:00",
+    "league": "2 Ekstraliga",
+    "homeScore": 35,
+    "awayScore": 31,
+    "isFinished": true
+  },
+  {
+    "id": "M2E-R01-M04",
+    "round": 1,
+    "homeTeamId": "BYD",
+    "awayTeamId": "KRO",
+    "date": "2026-04-05T20:00:00",
+    "league": "2 Ekstraliga",
+    "homeScore": 54,
+    "awayScore": 36,
+    "isFinished": true
+  },
+  {
+    "id": "M2E-R02-M01",
+    "round": 2,
+    "homeTeamId": "LOD",
+    "awayTeamId": "PIL",
+    "date": "2026-04-11T14:00:00",
+    "league": "2 Ekstraliga",
+    "homeScore": 46,
+    "awayScore": 44,
+    "isFinished": true
+  },
+  {
+    "id": "M2E-R02-M02",
+    "round": 2,
+    "homeTeamId": "RYB",
+    "awayTeamId": "BYD",
+    "date": "2026-04-11T16:30:00",
+    "league": "2 Ekstraliga",
+    "homeScore": 43,
+    "awayScore": 47,
+    "isFinished": true
+  },
+  {
+    "id": "M2E-R02-M03",
+    "round": 2,
+    "homeTeamId": "KRO",
+    "awayTeamId": "OST",
+    "date": "2026-04-12T15:15:00",
+    "league": "2 Ekstraliga",
+    "homeScore": 50,
+    "awayScore": 40,
+    "isFinished": true
+  },
+  {
+    "id": "M2E-R02-M04",
+    "round": 2,
+    "homeTeamId": "POZ",
+    "awayTeamId": "RZE",
+    "date": "2026-04-28T18:00:00",
+    "league": "2 Ekstraliga",
+    "isFinished": false
+  }
+]

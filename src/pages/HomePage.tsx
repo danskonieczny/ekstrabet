@@ -22,7 +22,7 @@ const HomePage = () => {
     const userBets = mockBets.filter((b) => b.userId === userId);
 
     // Stan betów: Record<matchId, { home, away }>
-    const [bets, setBets] = useState<Record<number, { home: number; away: number; isNitro: boolean }>>(() =>
+    const [bets, setBets] = useState<Record<string, { home: number; away: number; isNitro: boolean }>>(() =>
         Object.fromEntries(userBets.map((b) => [b.matchId, { home: b.predictedHome, away: b.predictedAway, isNitro: b.isNitro ?? false }])),
     );
 
@@ -30,12 +30,12 @@ const HomePage = () => {
         fetchMatches().then(setMatches);
     }, []);
 
-    const handleBet = (matchId: number) => {
+    const handleBet = (matchId: string) => {
         const match = matches.find((m) => m.id === matchId);
         if (match) setSelectedMatch(match);
     };
 
-    const handleConfirm = (matchId: number, homeScore: number, awayScore: number, isNitro: boolean) => {
+    const handleConfirm = (matchId: string, homeScore: number, awayScore: number, isNitro: boolean) => {
         setBets((prev) => ({ ...prev, [matchId]: { home: homeScore, away: awayScore, isNitro } }));
     };
 
@@ -61,7 +61,7 @@ const HomePage = () => {
         ...mockBets.filter((b) => b.userId !== userId),
         ...Object.entries(bets).map(([matchId, bet], i) => ({
             id: 9000 + i,
-            matchId: Number(matchId),
+            matchId,
             userId,
             predictedHome: bet.home,
             predictedAway: bet.away,

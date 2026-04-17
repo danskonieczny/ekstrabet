@@ -7,7 +7,7 @@ interface BetModalProps {
     canUseNitro: boolean; // 👈 nowe
     existingIsNitro?: boolean; // 👈 nowe — czy obecny bet już ma NITRO
     onClose: () => void;
-    onConfirm: (matchId: number, homeScore: number, awayScore: number, isNitro: boolean) => void;
+    onConfirm: (matchId: string, homeScore: number, awayScore: number, isNitro: boolean) => void;
 }
 
 const BetModal = ({ match, userId, canUseNitro, existingIsNitro, onClose, onConfirm }: BetModalProps) => {

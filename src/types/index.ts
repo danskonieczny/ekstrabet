@@ -9,7 +9,7 @@ export interface Team {
 export type League = Team["league"];
 
 export interface Match {
-    id: number;
+    id: string;
     round: number;
     homeTeam: Team;
     awayTeam: Team;
@@ -22,7 +22,7 @@ export interface Match {
 
 export interface Bet {
     id: number;
-    matchId: number;
+    matchId: string;
     userId: string;
     predictedHome: number;
     predictedAway: number;

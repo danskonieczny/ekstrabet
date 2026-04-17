@@ -3,7 +3,7 @@ import { calculatePoints } from "../utils/scoring";
 
 interface MatchCardProps {
     match: Match;
-    onBet?: (matchId: number) => void;
+    onBet?: (matchId: string) => void;
     existingBet?: { home: number; away: number; isNitro: boolean };
 }
 

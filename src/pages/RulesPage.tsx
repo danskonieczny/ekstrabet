@@ -13,8 +13,15 @@ const RulesPage = () => {
                 <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 space-y-3">
                     <p className="text-sm text-zinc-700 dark:text-zinc-300 leading-relaxed">
                         Przed każdym meczem PGE Ekstraligi i 2 Ekstraligi obstawiasz wynik spotkania — czyli ile punktów zdobędzie każda z
-                        drużyn. W żużlu wynik meczu zawsze sumuje się do{" "}
+                        drużyn. W żużlu wynik meczu zazwyczaj sumuje się do{" "}
                         <span className="font-semibold text-zinc-900 dark:text-white">90 punktów</span> (np. 50:40, 48:42).
+                    </p>
+                    <p className="text-sm text-zinc-700 dark:text-zinc-300 leading-relaxed">
+                        Mecz może jednak zostać <span className="font-semibold text-zinc-900 dark:text-white">przerwany przed końcem</span>{" "}
+                        — z powodu warunków atmosferycznych, kontuzji lub innych zdarzeń. Jeśli sędzia uzna wynik za oficjalny, mecz jest
+                        traktowany jako rozegrany i punkty są naliczane na podstawie{" "}
+                        <span className="font-semibold text-zinc-900 dark:text-white">rzeczywistej przewagi punktowej</span>, nawet jeśli
+                        suma nie wynosi 90.
                     </p>
                     <p className="text-sm text-zinc-700 dark:text-zinc-300 leading-relaxed">
                         Typowanie jest możliwe wyłącznie{" "}
@@ -51,15 +58,15 @@ const RulesPage = () => {
                     <div className="px-6 py-5">
                         <p className="text-sm font-semibold text-zinc-900 dark:text-white mb-1">2. Dokładność typowanego wyniku</p>
                         <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-3">
-                            Liczona jako suma wartości bezwzględnych różnic dla obu drużyn:
+                            Porównujemy przewagę punktową w typie z przewagą w rzeczywistym wyniku:
                             <br />
                             <span className="font-mono text-zinc-700 dark:text-zinc-300">
-                                |typ_gosp − wynik_gosp| + |typ_gość − wynik_gość|
+                                |(typ_gosp − typ_gość) − (wynik_gosp − wynik_gość)|
                             </span>
                         </p>
                         <div className="space-y-2">
                             {[
-                                { label: "Dokładny wynik", diff: "różnica = 0", points: "+10 pkt", highlight: true },
+                                { label: "Dokładna przewaga", diff: "różnica = 0", points: "+10 pkt", highlight: true },
                                 { label: "Bardzo blisko", diff: "różnica 1–2 pkt", points: "+6 pkt", highlight: false },
                                 { label: "Blisko", diff: "różnica 3–4 pkt", points: "+4 pkt", highlight: false },
                                 { label: "Niedaleko", diff: "różnica 5–6 pkt", points: "+2 pkt", highlight: false },
@@ -100,13 +107,13 @@ const RulesPage = () => {
                 </h2>
                 <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6">
                     <div className="flex items-center justify-between mb-4">
-                        <span className="text-sm text-zinc-600 dark:text-zinc-400">Zwycięzca (lub remis) + dokładny wynik</span>
+                        <span className="text-sm text-zinc-600 dark:text-zinc-400">Zwycięzca + dokładna przewaga</span>
                         <span className="text-sm font-bold text-zinc-900 dark:text-white">
                             2 + 10 = <span className="text-green-600 dark:text-green-400">12 pkt</span>
                         </span>
                     </div>
                     <div className="flex items-center justify-between">
-                        <span className="text-sm text-zinc-600 dark:text-zinc-400">Prawidłowy remis + dokładny wynik</span>
+                        <span className="text-sm text-zinc-600 dark:text-zinc-400">Prawidłowy remis + dokładna przewaga</span>
                         <span className="text-sm font-bold text-zinc-900 dark:text-white">
                             4 + 10 = <span className="text-green-600 dark:text-green-400">14 pkt</span>
                         </span>
@@ -176,7 +183,7 @@ const RulesPage = () => {
                             <span className="font-semibold text-zinc-900 dark:text-white">+2 pkt</span>
                         </div>
                         <div className="flex justify-between text-zinc-600 dark:text-zinc-400">
-                            <span>Różnica: |50−48| + |40−42| = 2+2 = 4 → zakres 3–4</span>
+                            <span>Przewaga w typie: 50−40 = 10, w meczu: 48−42 = 6, |10−6| = 4 → zakres 3–4</span>
                             <span className="font-semibold text-zinc-900 dark:text-white">+4 pkt</span>
                         </div>
                         <div className="h-px bg-zinc-100 dark:bg-zinc-800 my-2" />

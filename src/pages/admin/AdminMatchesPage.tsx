@@ -24,14 +24,14 @@ type MatchForm = typeof emptyForm;
 
 const AdminMatchesPage = () => {
     const [matches, setMatches] = useState<Match[]>(initialMatches);
-    const [editingId, setEditingId] = useState<number | null>(null);
+    const [editingId, setEditingId] = useState<string | null>(null);
     const [editForm, setEditForm] = useState<MatchForm>(emptyForm);
     const [showAddForm, setShowAddForm] = useState(false);
     const [newMatch, setNewMatch] = useState<MatchForm>(emptyForm);
     const [filterLeague, setFilterLeague] = useState<League>("PGE Ekstraliga");
 
     // ── Pomocnicze ────────────────────────────────────────────
-    const formToMatch = (form: MatchForm, id: number): Match => {
+    const formToMatch = (form: MatchForm, id: string): Match => {
         const homeTeam = allTeams[form.homeTeamId];
         const awayTeam = allTeams[form.awayTeamId];
         return {
@@ -82,7 +82,7 @@ const AdminMatchesPage = () => {
         cancelEdit();
     };
 
-    const deleteMatch = (id: number) => {
+    const deleteMatch = (id: string) => {
         if (!confirm("Na pewno usunąć ten mecz?")) return;
         console.log(`📦 DELETE /api/admin/matches/${id}`);
         // TODO: zastąpić → DELETE /api/admin/matches/:id
@@ -91,7 +91,10 @@ const AdminMatchesPage = () => {
 
     const addMatch = () => {
         if (!newMatch.homeTeamId || !newMatch.awayTeamId || !newMatch.date) return;
-        const id = Math.max(0, ...matches.map((m) => m.id)) + 1;
+        const leaguePrefix = newMatch.league === "PGE Ekstraliga" ? "PGE" : "M2E";
+        const round = String(newMatch.round).padStart(2, "0");
+        const matchesInRound = matches.filter((m) => m.league === newMatch.league && m.round === newMatch.round).length + 1;
+        const id = `${leaguePrefix}-R${round}-M${matchesInRound}`;
         const payload = formToMatch(newMatch, id);
         console.log("📦 POST /api/admin/matches — payload:", JSON.stringify(payload, null, 2));
         // TODO: zastąpić → POST /api/admin/matches

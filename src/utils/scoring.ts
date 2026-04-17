@@ -20,7 +20,9 @@ export function calculatePoints(
         winnerPoints = actualWinner === 0 ? 4 : 2;
     }
 
-    const totalDiff = Math.abs(predictedHome - actualHome) + Math.abs(predictedAway - actualAway);
+    const actualDiff = actualHome - actualAway;
+    const predictedDiff = predictedHome - predictedAway;
+    const totalDiff = Math.abs(actualDiff - predictedDiff);
 
     let accuracyPoints = 0;
     if (totalDiff === 0) accuracyPoints = 10;
@@ -29,7 +31,6 @@ export function calculatePoints(
     else if (totalDiff <= 6) accuracyPoints = 2;
 
     const base = winnerPoints + accuracyPoints;
-
     return {
         winnerPoints,
         accuracyPoints,
